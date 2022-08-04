@@ -278,11 +278,12 @@ class _FirebaseNotificationsHandlerState
         notificationIdCallback: widget.notificationIdCallback,
       );
 
-      if (!mounted) return;
-      widget.onFCMTokenInitialize?.call(context, token);
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        widget.onFCMTokenInitialize?.call(context, token);
 
-      PushNotificationService.onTokenRefresh.listen((token) {
-        widget.onFCMTokenUpdate?.call(context, token);
+        PushNotificationService.onTokenRefresh.listen((token) {
+          widget.onFCMTokenUpdate?.call(context, token);
+        });
       });
     }();
     super.initState();
