@@ -8,6 +8,7 @@ import 'package:firebase_notifications_handler/src/image_downloader.dart';
 import 'package:flutter/cupertino.dart'
     show GlobalKey, NavigatorState, debugPrint;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Internal implementation class
@@ -108,7 +109,11 @@ class PushNotificationService {
     if (navigatorKey != null) _navigatorKey = navigatorKey;
 
     /// Required only for iOS
-    if (!kIsWeb && Platform.isIOS) await _fcm.requestPermission();
+    if (!kIsWeb && Platform.isIOS) {
+      await _fcm.requestPermission();
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions();
+    }
 
     _fcmToken = await initializeFCMToken(vapidKey: vapidKey);
 
@@ -163,9 +168,7 @@ class PushNotificationService {
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     const initializationSettings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      // iOS: IOSInitializationSettings(
-      //   onDidReceiveLocalNotification: (id, title, body, payload) async {},
-      // ),
+      iOS: IOSInitializationSettings(),
     );
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
@@ -244,7 +247,10 @@ class PushNotificationService {
       enableVibration: true,
     );
 
-    final iOsSpecifics = IOSNotificationDetails(sound: _customSound);
+    final iOsSpecifics = IOSNotificationDetails(
+      presentAlert: true,
+      sound: _customSound,
+    );
 
     final notificationPlatformSpecifics = NotificationDetails(
       android: androidSpecifics,
